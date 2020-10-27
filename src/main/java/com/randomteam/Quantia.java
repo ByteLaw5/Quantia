@@ -11,6 +11,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemUseContext;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ToolType;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -45,7 +46,14 @@ public class Quantia {
 
     private void registerBlock(RegistryEvent.Register<Block> event) {
         event.getRegistry().registerAll(
-                BlockList.test_block = new Block(AbstractBlock.Properties.create(Material.IRON)).setRegistryName(new ResourceLocation(MOD_ID, "test_block"))
+                /*
+                From testing,
+                0 = wood
+                1 = stone
+                2 = iron/gold
+                3 = diamond
+                 */
+                BlockList.test_block = new Block(AbstractBlock.Properties.create(Material.IRON).setRequiresTool().harvestTool(ToolType.PICKAXE).harvestLevel(2).hardnessAndResistance(5.0F, 6.0F)).setRegistryName(new ResourceLocation(MOD_ID, "test_block"))
         );
     }
 }
