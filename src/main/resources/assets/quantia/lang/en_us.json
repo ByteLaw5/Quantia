@@ -1,3 +1,5 @@
 {
-    "item.quantia.test_item": "Test Item"
+    "item.quantia.test_item": "Test Item",
+
+    "block.quantia.test_block": "Test Block"
 }

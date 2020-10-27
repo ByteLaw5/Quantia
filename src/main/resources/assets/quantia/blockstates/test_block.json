@@ -1,0 +1,5 @@
+{
+    "variants": {
+        "": { "model": "quantia:block/test_block" }
+    }
+}

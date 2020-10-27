@@ -25,13 +25,13 @@ updateJSONURL="http://myurl.me/" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="http://example.com/" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
-logoFile="examplemod.png" #optional
+logoFile="QuantiaBanner.png" #optional
 # A text field displayed in the mod UI
 credits="." #optional
 # A text field displayed in the mod UI
 authors="ByteLaw, IdkGoodName" #optional
 # The description text for the mod (multi line!) (#mandatory)
-description='''
+description='''An RPG-styled Minecraft mod for late-game stage. Get tons of energy and craft REALLY powerful weapons, tools and armour. Create rituals & much more. New blocks, items, armour, weapons, tools.
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.quantia]] #optional
