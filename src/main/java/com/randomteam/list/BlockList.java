@@ -1,7 +1,7 @@
 package com.randomteam.list;
 
-import net.minecraft.block.Block;
+import com.randomteam.blocks.EnergyProducerBlock;
 
 public class BlockList {
-    public static Block test_block;
+    public static EnergyProducerBlock energy_producer;
 }
