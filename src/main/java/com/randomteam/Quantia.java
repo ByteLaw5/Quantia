@@ -1,8 +1,8 @@
 package com.randomteam;
 
 import com.randomteam.blocks.EnergyProducerBlock;
-import com.randomteam.blocks.EnergyProducerContainer;
-import com.randomteam.blocks.EnergyProducerScreen;
+import com.randomteam.containers.EnergyProducerContainer;
+import com.randomteam.containers.EnergyProducerScreen;
 import com.randomteam.list.BlockList;
 import com.randomteam.list.ContainerList;
 import com.randomteam.list.ItemList;

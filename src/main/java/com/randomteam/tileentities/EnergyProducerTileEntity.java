@@ -1,6 +1,6 @@
 package com.randomteam.tileentities;
 
-import com.randomteam.blocks.EnergyProducerContainer;
+import com.randomteam.containers.EnergyProducerContainer;
 import com.randomteam.list.TileEntityList;
 import com.randomteam.util.CustomEnergyStorage;
 import net.minecraft.block.BlockState;

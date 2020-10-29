@@ -1,8 +1,9 @@
-package com.randomteam.blocks;
+package com.randomteam.containers;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.randomteam.Quantia;
+import com.randomteam.containers.EnergyProducerContainer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.entity.player.PlayerInventory;

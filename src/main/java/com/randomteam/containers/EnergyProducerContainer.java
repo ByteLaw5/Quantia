@@ -1,4 +1,4 @@
-package com.randomteam.blocks;
+package com.randomteam.containers;
 
 import com.randomteam.list.BlockList;
 import com.randomteam.list.ContainerList;
