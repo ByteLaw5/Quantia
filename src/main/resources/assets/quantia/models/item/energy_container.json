@@ -1,0 +1,7 @@
+{
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "quantia:item/base_energy_container",
+        "layer1": "quantia:item/energy_container"
+    }
+}

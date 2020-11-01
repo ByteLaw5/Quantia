@@ -4,10 +4,9 @@ import com.randomteam.containers.ArcaneCrafterContainer;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.inventory.container.SimpleNamedContainerProvider;
-import net.minecraft.inventory.container.WorkbenchContainer;
-import net.minecraft.stats.Stats;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.IWorldPosCallable;
@@ -16,12 +15,14 @@ import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.network.NetworkHooks;
 
 import javax.annotation.Nullable;
 
 /**
  * Class for Arcane Crafter.
  */
+@SuppressWarnings("deprecation")
 public class ArcaneCrafterBlock extends Block {
     /**
      * Name of the container for lang files.
@@ -43,14 +44,11 @@ public class ArcaneCrafterBlock extends Block {
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity entity, Hand hand, BlockRayTraceResult traceResult) {
         // If world is remote, then return that it's fully done
-        if(world.isRemote) return ActionResultType.SUCCESS;
-        // If it isn't remote,
-        // open container
-        entity.openContainer(state.getContainer(world, pos));
-        // Add status that the player is interacting with crafting table(it's actually interacting with Arcane Crafter)
-        entity.addStat(Stats.INTERACT_WITH_CRAFTING_TABLE);
-        // Return that it is activated
-        return ActionResultType.CONSUME;
+        if(!world.isRemote) {
+            //Open the GUI
+            NetworkHooks.openGui((ServerPlayerEntity)entity, getContainer(state, world, pos), pos);
+        }
+        return ActionResultType.SUCCESS;
     }
 
     /**

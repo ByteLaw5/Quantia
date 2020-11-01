@@ -31,8 +31,8 @@ public class ArcaneCrafterContainer extends RecipeBookContainer<CraftingInventor
         this(p_i50089_1_, p_i50089_2_, IWorldPosCallable.DUMMY);
     }
 
-    public ArcaneCrafterContainer(int smth, PlayerInventory inventory, IWorldPosCallable callable) {
-        super(ContainerType.CRAFTING, smth);
+    public ArcaneCrafterContainer(int windowId, PlayerInventory inventory, IWorldPosCallable callable) {
+        super(ContainerType.CRAFTING, windowId);
         matrix = new CraftingInventory(this, 3, 3);
         result = new CraftResultInventory();
         this.callable = callable;
@@ -114,9 +114,9 @@ public class ArcaneCrafterContainer extends RecipeBookContainer<CraftingInventor
     }
 
     /**
-     * If both matrixes match.
+     * If both matricies match.
      * @param other Other matrix
-     * @return
+     * @return If both matricies match.
      */
     @Override
     public boolean matches(IRecipe<? super CraftingInventory> other) {

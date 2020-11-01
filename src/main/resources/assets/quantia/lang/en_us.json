@@ -1,4 +1,10 @@
 {
+    "item.quantia.energy_container": "Energy Container",
+
     "block.quantia.energy_producer": "Energy Producer",
-    "quantia.energy_producer.name": "Energy Producer"
+    "block.quantia.energy_receiver": "Energy Receiver",
+
+    "quantia.energy_producer.name": "Energy Producer",
+    "quantia.energy_receiver.name": "Energy Receiver",
+    "quantia.energy_container.energy": "Energy: %s"
 }
