@@ -23,13 +23,11 @@ import net.minecraftforge.items.wrapper.InvWrapper;
 
 public class EnergyProducerContainer extends Container {
     private final TileEntity tileEntity;
-    private final PlayerEntity player;
     private final IItemHandler playerInventory;
 
     public EnergyProducerContainer(int id, World world, BlockPos pos, PlayerInventory playerInventory, PlayerEntity player) {
         super(ContainerList.energy_producer, id);
         tileEntity = world.getTileEntity(pos);
-        this.player = player;
         this.playerInventory = new InvWrapper(playerInventory);
 
         if(tileEntity != null) {
@@ -76,7 +74,7 @@ public class EnergyProducerContainer extends Container {
 
     @Override
     public boolean canInteractWith(PlayerEntity playerIn) {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), player, BlockList.energy_producer);
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, BlockList.energy_producer);
     }
 
     @Override

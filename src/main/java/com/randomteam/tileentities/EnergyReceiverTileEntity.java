@@ -57,12 +57,12 @@ public class EnergyReceiverTileEntity extends TileEntity implements ITickableTil
             if(stack != ItemStack.EMPTY && hasWorld() && !isRemoved()) {
                 stack.getCapability(CapabilityEnergy.ENERGY).ifPresent(otherEnergyHandler -> {
                     if(energyHandler.canExtract() && otherEnergyHandler.canReceive() && otherEnergyHandler instanceof CustomEnergyStorage) {
-                        int toExtract = energyHandler.extractEnergy(100, false);
-                        int maxReceive = otherEnergyHandler.receiveEnergy(100, false);
-                        if(toExtract > maxReceive)
-                            toExtract = maxReceive;
-                        energyHandler.consumeEnergy(toExtract);
-                        ((CustomEnergyStorage)otherEnergyHandler).addEnergy(toExtract);
+                        int transferredEnergy = Math.min(100, energyHandler.getEnergyStored());
+                        if(otherEnergyHandler.getEnergyStored() + transferredEnergy > otherEnergyHandler.getMaxEnergyStored()) {
+                            transferredEnergy = Math.min(transferredEnergy, otherEnergyHandler.getMaxEnergyStored() - otherEnergyHandler.getEnergyStored());
+                        }
+                        energyHandler.consumeEnergy(transferredEnergy);
+                        ((CustomEnergyStorage)otherEnergyHandler).addEnergy(transferredEnergy);
                         markDirty();
                     }
                 });

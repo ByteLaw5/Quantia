@@ -23,13 +23,11 @@ import net.minecraftforge.items.wrapper.InvWrapper;
 
 public class EnergyReceiverContainer extends Container {
     private final TileEntity tileEntity;
-    private final PlayerEntity player;
     private final IItemHandler playerInventory;
 
     public EnergyReceiverContainer(int id, World world, BlockPos pos, PlayerInventory playerInventory, PlayerEntity player) {
         super(ContainerList.energy_receiver, id);
         tileEntity = world.getTileEntity(pos);
-        this.player = player;
         this.playerInventory = new InvWrapper(playerInventory);
 
         if(tileEntity != null)
@@ -113,7 +111,7 @@ public class EnergyReceiverContainer extends Container {
 
     @Override
     public boolean canInteractWith(PlayerEntity playerIn) {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), player, BlockList.energy_receiver);
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, BlockList.energy_receiver);
     }
 
     private int addSlotRange(IItemHandler handler, int index, int x, int y, int amount, int dx) {

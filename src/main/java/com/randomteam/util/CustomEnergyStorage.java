@@ -46,6 +46,11 @@ public class CustomEnergyStorage extends EnergyStorage implements INBTSerializab
     }
 
     @Override
+    public int receiveEnergy(int maxReceive, boolean simulate) {
+        return super.receiveEnergy(maxReceive, simulate);
+    }
+
+    @Override
     public void deserializeNBT(CompoundNBT nbt) {
         setEnergy(nbt.getInt("energy"));
     }

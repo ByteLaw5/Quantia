@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 public class EnergyProducerTileEntity extends TileEntity implements ITickableTileEntity, INamedContainerProvider {
     private final LazyOptional<CustomEnergyStorage> energy = LazyOptional.of(this::createEnergyHandler);
     private final LazyOptional<ItemStackHandler> items = LazyOptional.of(this::createItemHandler);
-    private int counter;
     private ITextComponent customName;
 
     public EnergyProducerTileEntity() {
@@ -39,7 +38,6 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
     public void read(BlockState state, CompoundNBT nbt) {
         items.ifPresent(h -> h.deserializeNBT(nbt.getCompound("Items")));
         energy.ifPresent(h -> h.deserializeNBT(nbt.getCompound("Energy")));
-        counter = nbt.getInt("Counter");
         if(nbt.contains("CustomName", Constants.NBT.TAG_STRING))
             setCustomName(ITextComponent.Serializer.getComponentFromJson(nbt.getString("CustomName")));
         super.read(state, nbt);
@@ -49,7 +47,6 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
     public CompoundNBT write(CompoundNBT compound) {
         items.ifPresent(h -> compound.put("Items", h.serializeNBT()));
         energy.ifPresent(h -> compound.put("Energy", h.serializeNBT()));
-        compound.putInt("Counter", counter);
         if(customName != null)
             compound.putString("CustomName", ITextComponent.Serializer.toJson(customName));
         return super.write(compound);
@@ -60,21 +57,14 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
         if(world.isRemote)
             return;
 
-        if(counter > 0) {
-            counter--;
-            if(counter <= 0)
-                energy.ifPresent(e -> e.addEnergy(100));
-            markDirty();
-        } else {
-            items.ifPresent(h -> {
-                ItemStack stack = h.getStackInSlot(0);
-                if(h.isItemValid(0, stack)) {
-                    h.extractItem(0, 1, false);
-                    counter = 4;
-                    markDirty();
-                }
-            });
-        }
+        items.ifPresent(h -> energy.ifPresent(energy -> {
+            ItemStack stack = h.getStackInSlot(0);
+            if(!stack.isEmpty()) {
+                h.extractItem(0, 1, false);
+                energy.addEnergy(50);
+                markDirty();
+            }
+        }));
 
         sendOutPower();
     }
@@ -87,12 +77,12 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
                     if(te != null) {
                         te.getCapability(CapabilityEnergy.ENERGY).ifPresent(otherEnergyHandler -> {
                             if(otherEnergyHandler.canReceive() && otherEnergyHandler instanceof CustomEnergyStorage) {
-                                int toExtract = energyHandler.extractEnergy(100, false);
-                                int maxReceive = otherEnergyHandler.receiveEnergy(100, false);
-                                if(toExtract > maxReceive)
-                                    toExtract = maxReceive;
-                                energyHandler.consumeEnergy(toExtract);
-                                ((CustomEnergyStorage)otherEnergyHandler).addEnergy(toExtract);
+                                int transferredEnergy = Math.min(100, energyHandler.getEnergyStored());
+                                if(otherEnergyHandler.getEnergyStored() + transferredEnergy > otherEnergyHandler.getMaxEnergyStored()) {
+                                    transferredEnergy = Math.min(transferredEnergy, otherEnergyHandler.getMaxEnergyStored() - otherEnergyHandler.getEnergyStored());
+                                }
+                                energyHandler.consumeEnergy(transferredEnergy);
+                                ((CustomEnergyStorage)otherEnergyHandler).addEnergy(transferredEnergy);
                                 markDirty();
                             }
                         });

@@ -34,7 +34,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 // TODO: Fix this whole mess
 @Mod(Quantia.MOD_ID)
-@SuppressWarnings("unchecked")
 public class Quantia {
     public static final String MOD_ID = "quantia";
 
