@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "quantia:block/arcane_crafter_top",
+    "bottom": "quantia:block/arcane_planks",
+    "side": "quantia:block/arcane_crafter_side"
+  }
+}

@@ -9,7 +9,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -17,6 +16,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.items.CapabilityItemHandler;
@@ -24,7 +24,6 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class EnergyProducerTileEntity extends TileEntity implements ITickableTileEntity, INamedContainerProvider {
     private final LazyOptional<CustomEnergyStorage> energy = LazyOptional.of(this::createEnergyHandler);
@@ -41,6 +40,8 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
         items.ifPresent(h -> h.deserializeNBT(nbt.getCompound("Items")));
         energy.ifPresent(h -> h.deserializeNBT(nbt.getCompound("Energy")));
         counter = nbt.getInt("Counter");
+        if(nbt.contains("CustomName", Constants.NBT.TAG_STRING))
+            setCustomName(ITextComponent.Serializer.getComponentFromJson(nbt.getString("CustomName")));
         super.read(state, nbt);
     }
 
@@ -49,6 +50,8 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
         items.ifPresent(h -> compound.put("Items", h.serializeNBT()));
         energy.ifPresent(h -> compound.put("Energy", h.serializeNBT()));
         compound.putInt("Counter", counter);
+        if(customName != null)
+            compound.putString("CustomName", ITextComponent.Serializer.toJson(customName));
         return super.write(compound);
     }
 
@@ -65,9 +68,9 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
         } else {
             items.ifPresent(h -> {
                 ItemStack stack = h.getStackInSlot(0);
-                if(stack.getItem() == Items.DIAMOND) {
+                if(h.isItemValid(0, stack)) {
                     h.extractItem(0, 1, false);
-                    counter = 20;
+                    counter = 4;
                     markDirty();
                 }
             });
@@ -77,25 +80,22 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
     }
 
     private void sendOutPower() {
-        energy.ifPresent(energy -> {
-            AtomicInteger capacity = new AtomicInteger(energy.getEnergyStored());
-            if(capacity.get() > 0) {
+        energy.ifPresent(energyHandler -> {
+            if(energyHandler.canExtract() && hasWorld() && !isRemoved()) {
                 for(Direction direction : Direction.values()) {
-                    TileEntity te = world.getTileEntity(pos.offset(direction));
+                    TileEntity te = this.world.getTileEntity(this.getPos().offset(direction));
                     if(te != null) {
-                        boolean doContinue = te.getCapability(CapabilityEnergy.ENERGY, direction).map(handler -> {
-                            if(handler.canReceive()) {
-                                int received = handler.receiveEnergy(Math.min(capacity.get(), 100), false);
-                                capacity.addAndGet(-received);
-                                energy.consumeEnergy(received);
+                        te.getCapability(CapabilityEnergy.ENERGY).ifPresent(otherEnergyHandler -> {
+                            if(otherEnergyHandler.canReceive() && otherEnergyHandler instanceof CustomEnergyStorage) {
+                                int toExtract = energyHandler.extractEnergy(100, false);
+                                int maxReceive = otherEnergyHandler.receiveEnergy(100, false);
+                                if(toExtract > maxReceive)
+                                    toExtract = maxReceive;
+                                energyHandler.consumeEnergy(toExtract);
+                                ((CustomEnergyStorage)otherEnergyHandler).addEnergy(toExtract);
                                 markDirty();
-                                return capacity.get() > 0;
-                            } else {
-                                return true;
                             }
-                        }).orElse(true);
-                        if(!doContinue)
-                            return;
+                        });
                     }
                 }
             }
@@ -115,11 +115,27 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
         return super.getCapability(cap);
     }
 
+    @Nonnull
+    @Override
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        return getCapability(cap);
+    }
+
     private CustomEnergyStorage createEnergyHandler() {
-        return new CustomEnergyStorage(10000, 0) {
+        return new CustomEnergyStorage(10000, 20) {
             @Override
             protected void onEnergyChanged() {
                 markDirty();
+            }
+
+            @Override
+            public boolean canExtract() {
+                return getEnergyStored() > 0;
+            }
+
+            @Override
+            public boolean canReceive() {
+                return false;
             }
         };
     }
@@ -146,5 +162,12 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
     @Override
     public Container createMenu(int windowId, PlayerInventory playerInventory, PlayerEntity player) {
         return new EnergyProducerContainer(windowId, player.getEntityWorld(), this.getPos(), playerInventory, player);
+    }
+
+    @Override
+    public void remove() {
+        super.remove();
+        energy.invalidate();
+        items.invalidate();
     }
 }

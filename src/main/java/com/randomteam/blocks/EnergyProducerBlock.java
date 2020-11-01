@@ -20,8 +20,8 @@ import net.minecraftforge.fml.network.NetworkHooks;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("deprecation")
-/**
- * Block which produces energy.
+/*
+  Block which produces energy.
  */
 public class EnergyProducerBlock extends Block {
     public EnergyProducerBlock(Properties properties) {
@@ -63,7 +63,7 @@ public class EnergyProducerBlock extends Block {
         // Get tile entity in this position
         TileEntity te = worldIn.getTileEntity(pos);
         if(!worldIn.isRemote && te instanceof EnergyProducerTileEntity) {
-            if(!stack.isEmpty())
+            if(!stack.isEmpty() && stack.hasDisplayName())
                 // Sets custom name of it
                 ((EnergyProducerTileEntity)te).setCustomName(stack.getDisplayName());
         }
