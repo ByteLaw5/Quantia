@@ -1,22 +1,19 @@
-package com.randomteam.tileentities;
+package com.bloodycrow.tileentities;
 
-import com.randomteam.containers.ArcaneCrafterContainer;
-import com.randomteam.containers.EnergyProducerContainer;
-import com.randomteam.list.TileEntityList;
+import com.bloodycrow.containers.ArcaneCrafterContainer;
+import com.bloodycrow.list.TileEntityList;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IWorldPosCallable;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 

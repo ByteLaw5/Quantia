@@ -1,8 +1,8 @@
-package com.randomteam.tileentities;
+package com.bloodycrow.tileentities;
 
-import com.randomteam.containers.EnergyReceiverContainer;
-import com.randomteam.list.TileEntityList;
-import com.randomteam.util.CustomEnergyStorage;
+import com.bloodycrow.containers.EnergyReceiverContainer;
+import com.bloodycrow.list.TileEntityList;
+import com.bloodycrow.util.CustomEnergyStorage;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -56,7 +56,7 @@ public class EnergyReceiverTileEntity extends TileEntity implements ITickableTil
             ItemStack stack = itemHandler.getStackInSlot(0);
             if(stack != ItemStack.EMPTY && hasWorld() && !isRemoved()) {
                 stack.getCapability(CapabilityEnergy.ENERGY).ifPresent(otherEnergyHandler -> {
-                    if(energyHandler.canExtract() && otherEnergyHandler.canReceive() && otherEnergyHandler instanceof CustomEnergyStorage) {
+                    if(otherEnergyHandler.canReceive() && otherEnergyHandler instanceof CustomEnergyStorage) {
                         int transferredEnergy = Math.min(100, energyHandler.getEnergyStored());
                         if(otherEnergyHandler.getEnergyStored() + transferredEnergy > otherEnergyHandler.getMaxEnergyStored()) {
                             transferredEnergy = Math.min(transferredEnergy, otherEnergyHandler.getMaxEnergyStored() - otherEnergyHandler.getEnergyStored());

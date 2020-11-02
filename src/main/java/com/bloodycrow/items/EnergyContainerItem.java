@@ -1,7 +1,7 @@
-package com.randomteam.items;
+package com.bloodycrow.items;
 
-import com.randomteam.Quantia;
-import com.randomteam.util.CustomEnergyStorage;
+import com.bloodycrow.Quantia;
+import com.bloodycrow.util.CustomEnergyStorage;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemModelsProperties;

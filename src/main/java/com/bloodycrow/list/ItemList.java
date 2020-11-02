@@ -1,6 +1,6 @@
-package com.randomteam.list;
+package com.bloodycrow.list;
 
-import com.randomteam.items.EnergyContainerItem;
+import com.bloodycrow.items.EnergyContainerItem;
 import net.minecraft.item.BlockItem;
 
 public class ItemList {

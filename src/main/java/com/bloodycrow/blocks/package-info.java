@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.randomteam.blocks;
+package com.bloodycrow.blocks;
 
 import mcp.MethodsReturnNonnullByDefault;
 

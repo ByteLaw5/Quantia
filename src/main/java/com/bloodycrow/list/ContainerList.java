@@ -1,8 +1,8 @@
-package com.randomteam.list;
+package com.bloodycrow.list;
 
-import com.randomteam.containers.ArcaneCrafterContainer;
-import com.randomteam.containers.EnergyProducerContainer;
-import com.randomteam.containers.EnergyReceiverContainer;
+import com.bloodycrow.containers.ArcaneCrafterContainer;
+import com.bloodycrow.containers.EnergyProducerContainer;
+import com.bloodycrow.containers.EnergyReceiverContainer;
 
 import net.minecraft.inventory.container.ContainerType;
 

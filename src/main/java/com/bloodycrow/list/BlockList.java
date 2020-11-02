@@ -1,8 +1,8 @@
-package com.randomteam.list;
+package com.bloodycrow.list;
 
-import com.randomteam.blocks.ArcaneCrafterBlock;
-import com.randomteam.blocks.EnergyProducerBlock;
-import com.randomteam.blocks.EnergyReceiverBlock;
+import com.bloodycrow.blocks.ArcaneCrafterBlock;
+import com.bloodycrow.blocks.EnergyProducerBlock;
+import com.bloodycrow.blocks.EnergyReceiverBlock;
 
 public class BlockList {
     public static EnergyProducerBlock energy_producer;

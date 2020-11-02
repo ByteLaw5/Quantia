@@ -1,8 +1,8 @@
-package com.randomteam.list;
+package com.bloodycrow.list;
 
-import com.randomteam.tileentities.ArcaneCrafterTileEntity;
-import com.randomteam.tileentities.EnergyProducerTileEntity;
-import com.randomteam.tileentities.EnergyReceiverTileEntity;
+import com.bloodycrow.tileentities.ArcaneCrafterTileEntity;
+import com.bloodycrow.tileentities.EnergyProducerTileEntity;
+import com.bloodycrow.tileentities.EnergyReceiverTileEntity;
 import net.minecraft.tileentity.TileEntityType;
 
 public class TileEntityList {

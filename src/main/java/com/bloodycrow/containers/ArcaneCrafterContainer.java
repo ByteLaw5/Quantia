@@ -1,4 +1,4 @@
-package com.randomteam.containers;
+package com.bloodycrow.containers;
 
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;

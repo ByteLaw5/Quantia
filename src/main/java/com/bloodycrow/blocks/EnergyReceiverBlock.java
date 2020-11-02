@@ -1,7 +1,7 @@
-package com.randomteam.blocks;
+package com.bloodycrow.blocks;
 
-import com.randomteam.tileentities.EnergyProducerTileEntity;
-import com.randomteam.tileentities.EnergyReceiverTileEntity;
+import com.bloodycrow.tileentities.EnergyProducerTileEntity;
+import com.bloodycrow.tileentities.EnergyReceiverTileEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.LivingEntity;

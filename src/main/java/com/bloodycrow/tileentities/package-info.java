@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.randomteam;
+package com.bloodycrow.tileentities;
 
 import mcp.MethodsReturnNonnullByDefault;
 
