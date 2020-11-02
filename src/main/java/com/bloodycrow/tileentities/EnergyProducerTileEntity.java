@@ -1,7 +1,6 @@
 package com.bloodycrow.tileentities;
 
 import com.bloodycrow.containers.EnergyProducerContainer;
-import com.bloodycrow.list.TileEntityList;
 import com.bloodycrow.util.CustomEnergyStorage;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
@@ -31,7 +30,7 @@ public class EnergyProducerTileEntity extends TileEntity implements ITickableTil
     private ITextComponent customName;
 
     public EnergyProducerTileEntity() {
-        super(TileEntityList.energy_producer);
+        super(null);
     }
 
     @Override

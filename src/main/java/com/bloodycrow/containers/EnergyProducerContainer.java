@@ -1,7 +1,5 @@
 package com.bloodycrow.containers;
 
-import com.bloodycrow.list.BlockList;
-import com.bloodycrow.list.ContainerList;
 import com.bloodycrow.util.CustomEnergyStorage;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -26,7 +24,7 @@ public class EnergyProducerContainer extends Container {
     private final IItemHandler playerInventory;
 
     public EnergyProducerContainer(int id, World world, BlockPos pos, PlayerInventory playerInventory, PlayerEntity player) {
-        super(ContainerList.energy_producer, id);
+        super(null, id);
         tileEntity = world.getTileEntity(pos);
         this.playerInventory = new InvWrapper(playerInventory);
 
@@ -74,7 +72,7 @@ public class EnergyProducerContainer extends Container {
 
     @Override
     public boolean canInteractWith(PlayerEntity playerIn) {
-        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, BlockList.energy_producer);
+        return isWithinUsableDistance(IWorldPosCallable.of(tileEntity.getWorld(), tileEntity.getPos()), playerIn, null);
     }
 
     @Override

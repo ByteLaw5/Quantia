@@ -1,11 +1,10 @@
 package com.bloodycrow.list;
 
 import com.bloodycrow.blocks.ArcaneCrafterBlock;
-import com.bloodycrow.blocks.EnergyProducerBlock;
-import com.bloodycrow.blocks.EnergyReceiverBlock;
+import net.minecraft.block.Block;
 
 public class BlockList {
-    public static EnergyProducerBlock energy_producer;
-    public static EnergyReceiverBlock energy_receiver;
     public static ArcaneCrafterBlock arcane_crafter;
+    public static Block corrupted_bricks;
+    public static Block cracked_corrupted_bricks;
 }

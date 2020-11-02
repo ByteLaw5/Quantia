@@ -1,10 +1,7 @@
 {
-    "item.quantia.energy_container": "Energy Container",
+    "block.quantia.arcane_crafter": "Arcane Crafter",
+    "block.quantia.corrupted_bricks": "Corrupted Bricks",
+    "block.quantia.cracked_corrupted_bricks": "Cracked Corrupted Bricks",
 
-    "block.quantia.energy_producer": "Energy Producer",
-    "block.quantia.energy_receiver": "Energy Receiver",
-
-    "quantia.energy_producer.name": "Energy Producer",
-    "quantia.energy_receiver.name": "Energy Receiver",
-    "quantia.energy_container.energy": "Energy: %s"
+    "itemGroup.quantia": "Quantia"
 }

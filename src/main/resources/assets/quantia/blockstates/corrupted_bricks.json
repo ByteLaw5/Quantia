@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "": {
+            "model": "quantia:block/corrupted_bricks"
+        }
+    }
+}
