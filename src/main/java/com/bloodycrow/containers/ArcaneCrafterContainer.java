@@ -6,13 +6,10 @@ import com.bloodycrow.list.RecipeList;
 import com.bloodycrow.recipes.ArcaneCrafterRecipe;
 import com.bloodycrow.util.DummyContainer;
 import com.bloodycrow.util.HandlerWrapper;
-import com.bloodycrow.util.Util;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
@@ -56,7 +53,7 @@ public class ArcaneCrafterContainer extends Container {
             te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
                 //The handler should always be present, meaning this is never null. If not something is very broken
                 inv = new HandlerWrapper((IItemHandlerModifiable)h);
-                assertInventorySize(new Inventory(Util.toArray(h)), 26);
+                assertInventorySize(inv, 26);
                 int index = 0;
                 addSlot(new SlotItemHandler(h, index, 147, 53) { // 137, 35
                     @Override
@@ -71,7 +68,7 @@ public class ArcaneCrafterContainer extends Container {
 
                     @Override
                     public void onSlotChanged() {
-                        determineRecipe();
+                        ((IItemHandlerModifiable)h).setStackInSlot(0, determineRecipe());
                     }
                 });
                 index = 1;
@@ -80,7 +77,7 @@ public class ArcaneCrafterContainer extends Container {
                         addSlot(new SlotItemHandler(h, index++, 12 + positions[1] * 18, 17 + positions[0] * 18) {
                             @Override
                             public void onSlotChanged() {
-                                determineRecipe();
+                                ((IItemHandlerModifiable)h).setStackInSlot(0, determineRecipe());
                             }
                         });
                     }
@@ -121,22 +118,27 @@ public class ArcaneCrafterContainer extends Container {
 //    }
 
     /**
-     * Used to determine if a crafting recipe is valid.
+     * Used to determine if a crafting recipe is valid, and return the result.
+     * @return The result
      */
-    private void determineRecipe() {
+    private ItemStack determineRecipe() {
+        ItemStack[] result = new ItemStack[1];
         te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
             updateInv();
             ICraftingRecipe recipe = world.getRecipeManager().getRecipe(IRecipeType.CRAFTING, tempInventory, world).orElse(null);
             currentRecipe = Either.left(recipe);
-            if(recipe != null)
-                ((IItemHandlerModifiable)h).setStackInSlot(0, recipe.getCraftingResult(tempInventory));
-            else {
-                world.getRecipeManager().getRecipe(RecipeList.arcane_crafter, inv, world).ifPresent(arcaneRecipe -> {
-                    ((IItemHandlerModifiable)h).setStackInSlot(0, arcaneRecipe.getCraftingResult(inv));
-                    currentRecipe = Either.right(arcaneRecipe);
-                });
+            if(recipe != null) {
+                result[0] = recipe.getCraftingResult(tempInventory);
+            } else {
+                ArcaneCrafterRecipe arcaneRecipe = world.getRecipeManager().getRecipe(RecipeList.arcane_crafter, inv, world).orElse(null);
+                if(arcaneRecipe != null) {
+                    result[0] = arcaneRecipe.getCraftingResult(inv);
+                } else {
+                    result[0] = ItemStack.EMPTY;
+                }
             }
         });
+        return result[0];
     }
 
     /**
@@ -144,40 +146,38 @@ public class ArcaneCrafterContainer extends Container {
      * @return Always the inputted stack.
      */
     private ItemStack onCraftingResultItemTakenFromSlot(PlayerEntity player, ItemStack stack) {
-        te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
-            updateInv();
-            //Gets the remaining items from the recipe when you don't have enough inventory space.
-            //We're using a single element array because consumers need effectively final or atomic variables...
-            final NonNullList<ItemStack>[] remainingItems = new NonNullList[1];
-            if(currentRecipe != null)
-                currentRecipe.ifLeft(craftingRecipe -> remainingItems[0] = getRemainingItems(craftingRecipe)).ifRight(arcaneRecipe -> remainingItems[0] = getRemainingItems(arcaneRecipe));
-            ((IItemHandlerModifiable)h).setStackInSlot(0, ItemStack.EMPTY);
-            for(int i = 1; i < 26; i++) {
-                ItemStack stack1 = h.getStackInSlot(i);
-                stack1.shrink(1);
-                ((IItemHandlerModifiable)h).setStackInSlot(i, stack1);
-            }
-            for(ItemStack stack1 : remainingItems[0]) {
-                if(!stack1.isEmpty())
-                    if(!player.inventory.addItemStackToInventory(stack1))
-                        player.dropItem(stack1, false);
-            }
-            determineRecipe();
-        });
+        //Containers are on the client.
+        if(world.isRemote) {
+            te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
+                updateInv();
+                //Gets the remaining items from the recipe when you don't have enough inventory space.
+                //We're using a single element array because consumers need effectively final or atomic variables...
+                final NonNullList<ItemStack>[] remainingItems = new NonNullList[1];
+                if(currentRecipe != null)
+                    currentRecipe.ifLeft(craftingRecipe -> remainingItems[0] = getRemainingItems(craftingRecipe)).ifRight(arcaneRecipe -> remainingItems[0] = getRemainingItems(arcaneRecipe));
+                ((IItemHandlerModifiable)h).setStackInSlot(0, ItemStack.EMPTY);
+                for(int i = 1; i < 26; i++) { // 10 => 26
+                    ItemStack stack1 = h.getStackInSlot(i);
+                    stack1.shrink(1);
+                    ((IItemHandlerModifiable)h).setStackInSlot(i, stack1);
+                }
+                for(ItemStack stack1 : remainingItems[0]) {
+                    if(!stack1.isEmpty())
+                        if(!player.inventory.addItemStackToInventory(stack1))
+                            player.dropItem(stack1, false);
+                }
+                ((IItemHandlerModifiable)h).setStackInSlot(0, determineRecipe());
+            });
+        }
         return stack;
     }
 
     private NonNullList<ItemStack> getRemainingItems(IRecipe<?> recipe) {
         try {
-            return recipe instanceof ICraftingRecipe ? ((ICraftingRecipe)recipe).getRemainingItems(tempInventory) : ((ArcaneCrafterRecipe)recipe).getRemainingItems(inv);
-        } catch(NullPointerException e) {
+            return recipe instanceof ICraftingRecipe ? ((ICraftingRecipe) recipe).getRemainingItems(tempInventory) : ((ArcaneCrafterRecipe) recipe).getRemainingItems(inv);
+        } catch (NullPointerException e) {
             return NonNullList.withSize(26, ItemStack.EMPTY);
         }
-    }
-
-    @Override
-    public void onCraftMatrixChanged(IInventory inventoryIn) {
-        determineRecipe();
     }
 
     private void updateInv() {
