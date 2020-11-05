@@ -60,7 +60,7 @@ public class ArcaneCrafterTileEntity extends TileEntity implements INamedContain
      * @return Item handler.
      */
     private ItemStackHandler createItemHandler() {
-        return new ItemStackHandler(10) {
+        return new ItemStackHandler(26) {
             @Override
             protected void onContentsChanged(int slot) {
                 markDirty();

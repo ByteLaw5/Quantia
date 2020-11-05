@@ -56,9 +56,9 @@ public class ArcaneCrafterContainer extends Container {
             te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
                 //The handler should always be present, meaning this is never null. If not something is very broken
                 inv = new HandlerWrapper((IItemHandlerModifiable)h);
-                assertInventorySize(new Inventory(Util.toArray(h)), 10);
+                assertInventorySize(new Inventory(Util.toArray(h)), 26);
                 int index = 0;
-                addSlot(new SlotItemHandler(h, index, 137, 35) {
+                addSlot(new SlotItemHandler(h, index, 147, 53) { // 137, 35
                     @Override
                     public boolean isItemValid(@Nonnull ItemStack stack) {
                         return false;
@@ -75,9 +75,9 @@ public class ArcaneCrafterContainer extends Container {
                     }
                 });
                 index = 1;
-                for(positions[0] = 0; positions[0] < 3; positions[0]++) { // 3 rows
-                    for (positions[1] = 0; positions[1] < 3; positions[1]++) { // 3 columns
-                        addSlot(new SlotItemHandler(h, index++, 30 + positions[1] * 18, 17 + positions[0] * 18) {
+                for(positions[0] = 0; positions[0] < 5; positions[0]++) { // 5 rows
+                    for (positions[1] = 0; positions[1] < 5; positions[1]++) { // 5 columns
+                        addSlot(new SlotItemHandler(h, index++, 12 + positions[1] * 18, 17 + positions[0] * 18) {
                             @Override
                             public void onSlotChanged() {
                                 determineRecipe();
@@ -90,10 +90,10 @@ public class ArcaneCrafterContainer extends Container {
         // Player's inventory
         for(positions[0] = 0; positions[0] < 3; positions[0]++) // 3 rows
             for(positions[1] = 0; positions[1] < 9; positions[1]++) // 9 columns
-                addSlot(new Slot(inventory, positions[1] + positions[0] * 9 + 9, 8 + positions[1] * 18, 84 + positions[0] * 18));
+                addSlot(new Slot(inventory, positions[1] + positions[0] * 9 + 9, 8 + positions[1] * 18, 120 + positions[0] * 18)); // 84 + ...
         // Player's hotbar
         for(positions[0] = 0; positions[0] < 9; positions[0]++) // 1 row, 9 columns
-            addSlot(new Slot(inventory, positions[0], 8 + positions[0] * 18, 142));
+            addSlot(new Slot(inventory, positions[0], 8 + positions[0] * 18, 178)); // ..., 142
     }
 
     /**
@@ -110,15 +110,15 @@ public class ArcaneCrafterContainer extends Container {
      * When the container is closed.
      * @param playerIn The player that closed the container
      */
-    @Override
-    public void onContainerClosed(PlayerEntity playerIn) {
-        super.onContainerClosed(playerIn);
-        for(int i = 1; i < 10; i++) {
-            ItemStack toDrop = getSlot(i).getStack();
-            if(!toDrop.isEmpty())
-                playerIn.dropItem(toDrop, false);
-        }
-    }
+//    @Override
+//    public void onContainerClosed(PlayerEntity playerIn) {
+//        super.onContainerClosed(playerIn);
+//        //for(int i = 1; i < 10; i++) {
+//        //    ItemStack toDrop = getSlot(i).getStack();
+//        //    if(!toDrop.isEmpty())
+//        //        playerIn.dropItem(toDrop, false);
+//        //}
+//    }
 
     /**
      * Used to determine if a crafting recipe is valid.
@@ -152,7 +152,7 @@ public class ArcaneCrafterContainer extends Container {
             if(currentRecipe != null)
                 currentRecipe.ifLeft(craftingRecipe -> remainingItems[0] = getRemainingItems(craftingRecipe)).ifRight(arcaneRecipe -> remainingItems[0] = getRemainingItems(arcaneRecipe));
             ((IItemHandlerModifiable)h).setStackInSlot(0, ItemStack.EMPTY);
-            for(int i = 1; i < 10; i++) {
+            for(int i = 1; i < 26; i++) {
                 ItemStack stack1 = h.getStackInSlot(i);
                 stack1.shrink(1);
                 ((IItemHandlerModifiable)h).setStackInSlot(i, stack1);
@@ -171,7 +171,7 @@ public class ArcaneCrafterContainer extends Container {
         try {
             return recipe instanceof ICraftingRecipe ? ((ICraftingRecipe)recipe).getRemainingItems(tempInventory) : ((ArcaneCrafterRecipe)recipe).getRemainingItems(inv);
         } catch(NullPointerException e) {
-            return NonNullList.withSize(10, ItemStack.EMPTY);
+            return NonNullList.withSize(26, ItemStack.EMPTY);
         }
     }
 
@@ -197,16 +197,16 @@ public class ArcaneCrafterContainer extends Container {
             stack = stack1.copy();
             if(slot == 0) {
                 callable.consume((world, pos) -> stack1.getItem().onCreated(stack1, world, playerEntity));
-                if (!mergeItemStack(stack1, 10, 46, true)) return ItemStack.EMPTY;
+                if (!mergeItemStack(stack1, 26, 62, true)) return ItemStack.EMPTY; // 10 => 26, 46 => 62
                 invSlot.onSlotChange(stack1, stack);
             }
             // Mojang, the actual fuck is this?
             else if (slot >= 11 && slot < 47)
-                if (!mergeItemStack(stack1, 1, 10, false))
+                if (!mergeItemStack(stack1, 1, 26, false)) // 10 => 26
                     if (slot < 37)
-                        if (!mergeItemStack(stack1, 38, 47, false)) return ItemStack.EMPTY;
-                    else if (!this.mergeItemStack(stack1, 11, 38, false)) return ItemStack.EMPTY;
-            else if (!mergeItemStack(stack1, 11, 47, false)) return ItemStack.EMPTY;
+                        if (!mergeItemStack(stack1, 54, 63, false)) return ItemStack.EMPTY; // 38 => 54, 47 => 63
+                    else if (!this.mergeItemStack(stack1, 27, 54, false)) return ItemStack.EMPTY; // 11 => 27, 38 => 54
+            else if (!mergeItemStack(stack1, 27, 63, false)) return ItemStack.EMPTY; // 11 => 27, 47 => 63
 
             if (stack1.isEmpty()) invSlot.putStack(ItemStack.EMPTY);
             else invSlot.onSlotChanged();

@@ -27,6 +27,6 @@ public class ArcaneCrafterScreen extends ContainerScreen<ArcaneCrafterContainer>
         minecraft.getTextureManager().bindTexture(new ResourceLocation(Quantia.MOD_ID, "textures/gui/arcane_crafter.png"));
         int relX = (width - xSize) / 2;
         int relY = (height - ySize) / 2;
-        blit(matrixStack, relX, relY, 0, 0, xSize, ySize);
+        blit(matrixStack, relX, relY, 0, 0, xSize, ySize + 54);
     }
 }
