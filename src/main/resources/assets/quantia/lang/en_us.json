@@ -2,6 +2,9 @@
     "block.quantia.arcane_crafter": "Arcane Crafter",
     "block.quantia.corrupted_bricks": "Corrupted Bricks",
     "block.quantia.cracked_corrupted_bricks": "Cracked Corrupted Bricks",
+    "block.quantia.mossy_corrupted_bricks": "Mossy Corrupted Bricks",
 
-    "itemGroup.quantia": "Quantia"
+    "itemGroup.quantia": "Quantia",
+
+    "quantia.arcane_crafter.name": "Arcane Crafter"
 }

@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 public class ArcaneCrafterTileEntity extends TileEntity implements INamedContainerProvider {
     private final LazyOptional<ItemStackHandler> items = LazyOptional.of(this::createItemHandler);
     private ITextComponent customName;
+
     public ArcaneCrafterTileEntity() {
         super(TileEntityList.arcane_crafter);
         customName = null;
@@ -44,7 +45,7 @@ public class ArcaneCrafterTileEntity extends TileEntity implements INamedContain
      * @param nbt Given NBT data.
      */
     @Override
-    public void read(BlockState state, CompoundNBT nbt) {
+    public void read(BlockState state, final CompoundNBT nbt) {
         items.ifPresent(h -> h.deserializeNBT(nbt.getCompound("Items")));
         super.read(state, nbt);
     }
@@ -54,7 +55,7 @@ public class ArcaneCrafterTileEntity extends TileEntity implements INamedContain
      * @return Serialized NBT data.
      */
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundNBT write(final CompoundNBT compound) {
         items.ifPresent(h -> compound.put("Items", h.serializeNBT()));
         return super.write(compound);
     }
@@ -80,7 +81,7 @@ public class ArcaneCrafterTileEntity extends TileEntity implements INamedContain
      * @return Item handler.
      */
     private ItemStackHandler createItemHandler() {
-        return new ItemStackHandler(9) {
+        return new ItemStackHandler(10) {
             @Override
             protected void onContentsChanged(int slot) {
                 markDirty();
@@ -96,7 +97,7 @@ public class ArcaneCrafterTileEntity extends TileEntity implements INamedContain
     }
     /**
      * Creates menu for the tile entity.
-     * @param windowId Idk
+     * @param windowId The window id
      * @param playerInventory Inventory of player entity
      * @param player Inventory owner
      * @return New container
@@ -104,6 +105,6 @@ public class ArcaneCrafterTileEntity extends TileEntity implements INamedContain
     @Nullable
     @Override
     public Container createMenu(int windowId, PlayerInventory playerInventory, PlayerEntity player) {
-        return new ArcaneCrafterContainer(windowId, playerInventory, IWorldPosCallable.of(world, pos));
+        return new ArcaneCrafterContainer(windowId, world, pos, playerInventory, IWorldPosCallable.of(world, pos));
     }
 }

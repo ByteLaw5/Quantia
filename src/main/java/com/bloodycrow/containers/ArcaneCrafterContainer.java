@@ -1,138 +1,101 @@
 package com.bloodycrow.containers;
 
-import net.minecraft.block.Blocks;
+import com.bloodycrow.list.BlockList;
+import com.bloodycrow.list.ContainerList;
+import com.bloodycrow.list.RecipeList;
+import com.bloodycrow.recipes.ArcaneCrafterRecipe;
+import com.bloodycrow.util.DummyContainer;
+import com.bloodycrow.util.HandlerWrapper;
+import com.bloodycrow.util.Util;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.CraftResultInventory;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.inventory.container.CraftingResultSlot;
-import net.minecraft.inventory.container.RecipeBookContainer;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.*;
-import net.minecraft.network.play.server.SSetSlotPacket;
+import net.minecraft.item.crafting.ICraftingRecipe;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.IRecipeType;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IWorldPosCallable;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.items.SlotItemHandler;
 
-import java.util.Optional;
+import javax.annotation.Nonnull;
 
-public class ArcaneCrafterContainer extends RecipeBookContainer<CraftingInventory> {
-    private final CraftingInventory matrix;
-    private final CraftResultInventory result;
+public class ArcaneCrafterContainer extends Container {
     private final IWorldPosCallable callable;
-    private final PlayerEntity player;
+    private final World world;
+    private final TileEntity te;
+    /**
+     * A wrapper for a handler, so we can use IRecipe shit with. The actual inventory is a capability within a tile entity, and to actually get items you need to use {@link Container#getSlot(int)}.
+     */
+    private HandlerWrapper inv;
+    private Either<ICraftingRecipe, ArcaneCrafterRecipe> currentRecipe;
+    /**
+     * Used for methods to get normal crafting recipes.
+     */
+    private CraftingInventory tempInventory;
 
-    public ArcaneCrafterContainer(int p_i50089_1_, PlayerInventory p_i50089_2_) {
-        this(p_i50089_1_, p_i50089_2_, IWorldPosCallable.DUMMY);
-    }
-
-    public ArcaneCrafterContainer(int windowId, PlayerInventory inventory, IWorldPosCallable callable) {
-        super(ContainerType.CRAFTING, windowId);
-        matrix = new CraftingInventory(this, 3, 3);
-        result = new CraftResultInventory();
+    public ArcaneCrafterContainer(int windowId, World world, BlockPos pos, PlayerInventory inventory, IWorldPosCallable callable) {
+        super(ContainerList.arcane_crafter, windowId);
+        int[] positions = new int[2];
+        this.world = world;
+        te = world.getTileEntity(pos);
         this.callable = callable;
-        player = inventory.player;
-        // Result of the crafting
-        // Player inventory, container matrix, container result, slot index, slot x, slot y
-        // Default X: 124
-        addSlot(new CraftingResultSlot(inventory.player, matrix, result, 0, 124, 35));
-        int i, j;
-        // Draws 3x3 grid.
-        for(i = 0; i < 3; i++) // 3 rows
-            for(j = 0; j < 3; j++) // 3 columns
-                addSlot(new Slot(matrix, j + i * 3, 30 + j * 18, 17 + i * 18));
-        // Player's inventory
-        for(i = 0; i < 3; ++i) // 3 rows
-            for(j = 0; j < 9; j++) // 9 columns
-                addSlot(new Slot(inventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
-        // Player's hotbar
-        for(i = 0; i < 9; i++) // 1 row, 9 columns
-            addSlot(new Slot(inventory, i, 8 + i * 18, 142));
-    }
 
-    /**
-     * Updates crafting result
-     * @param index Slot index(?)
-     * @param world World of the block which uses this container
-     * @param player Player which activated this
-     * @param craftingInventory This container's crafting inventory
-     * @param resultInventory Inventory of the result
-     */
-    protected static void updateCraftingResult(int index, World world, PlayerEntity player, CraftingInventory craftingInventory, CraftResultInventory resultInventory) {
-        if (!world.isRemote) {
-            // Gets player as server player entity
-            ServerPlayerEntity serverEntity = (ServerPlayerEntity)player;
-            // Creates empty stack
-            ItemStack stack = ItemStack.EMPTY;
-            // Gets either null or existing crafting recipe
-            Optional<ICraftingRecipe> optionalRecipe = world.getServer().getRecipeManager().getRecipe(IRecipeType.CRAFTING, craftingInventory, world);
-            // If it's not null
-            if (optionalRecipe.isPresent()) {
-                // Get the value
-                ICraftingRecipe recipe = (ICraftingRecipe)optionalRecipe.get();
-                // If result inventory can use given recipe
-                if (resultInventory.canUseRecipe(world, serverEntity, recipe))
-                    // Sets empty stack as a result
-                    stack = recipe.getCraftingResult(craftingInventory);
-            }
-            // Sets stack to slot with index 0(result slot)
-            craftingInventory.setInventorySlotContents(0, stack);
-            // Sends server player entity a slot packet
-            serverEntity.connection.sendPacket(new SSetSlotPacket(index, 0, stack));
+        // Draws 3x3 grid and sets up some final things.
+        if(te != null) {
+            te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
+                //The handler should always be present, meaning this is never null. If not something is very broken
+                inv = new HandlerWrapper((IItemHandlerModifiable)h);
+                assertInventorySize(new Inventory(Util.toArray(h)), 10);
+                int index = 0;
+                addSlot(new SlotItemHandler(h, index, 137, 35) {
+                    @Override
+                    public boolean isItemValid(@Nonnull ItemStack stack) {
+                        return false;
+                    }
+
+                    @Override
+                    public ItemStack onTake(PlayerEntity thePlayer, ItemStack stack) {
+                        return onCraftingResultItemTakenFromSlot(thePlayer, stack);
+                    }
+
+                    @Override
+                    public void onSlotChanged() {
+                        determineRecipe();
+                    }
+                });
+                index = 1;
+                for(positions[0] = 0; positions[0] < 3; positions[0]++) { // 3 rows
+                    for (positions[1] = 0; positions[1] < 3; positions[1]++) { // 3 columns
+                        addSlot(new SlotItemHandler(h, index++, 30 + positions[1] * 18, 17 + positions[0] * 18) {
+                            @Override
+                            public void onSlotChanged() {
+                                determineRecipe();
+                            }
+                        });
+                    }
+                }
+            });
         }
-    }
-    /**
-     * Event when matrix is changed
-     * @param inventory Inventory
-     */
-    @Override
-    public void onCraftMatrixChanged(IInventory inventory) {
-        callable.consume((world, pos) -> {
-            updateCraftingResult(windowId, world, player, matrix, result);
-        });
-    }
-    /**
-     * Fills stacked contents.
-     * @param itemHelper Recipe item helper.
-     */
-    @Override
-    public void fillStackedContents(RecipeItemHelper itemHelper) {
-        matrix.fillStackedContents(itemHelper);
-    }
-    /**
-     * Clears whole container.
-     */
-    @Override
-    public void clear() {
-        matrix.clear();
-        result.clear();
+        // Player's inventory
+        for(positions[0] = 0; positions[0] < 3; positions[0]++) // 3 rows
+            for(positions[1] = 0; positions[1] < 9; positions[1]++) // 9 columns
+                addSlot(new Slot(inventory, positions[1] + positions[0] * 9 + 9, 8 + positions[1] * 18, 84 + positions[0] * 18));
+        // Player's hotbar
+        for(positions[0] = 0; positions[0] < 9; positions[0]++) // 1 row, 9 columns
+            addSlot(new Slot(inventory, positions[0], 8 + positions[0] * 18, 142));
     }
 
-    /**
-     * If both matricies match.
-     * @param other Other matrix
-     * @return If both matricies match.
-     */
-    @Override
-    public boolean matches(IRecipe<? super CraftingInventory> other) {
-        return other.matches(matrix, player.world);
-    }
-    /**
-     * Event when container gets closed
-     * @param playerEntity Entity closing this container
-     */
-    @Override
-    public void onContainerClosed(PlayerEntity playerEntity) {
-        // Calls base's onContainerClosed event
-        super.onContainerClosed(playerEntity);
-        // Consumes the container
-        callable.consume((world, pos) -> clearContainer(playerEntity, world, matrix));
-    }
     /**
      * Whether this container can interact with a player.
      * @param playerEntity Player entity.
@@ -140,7 +103,75 @@ public class ArcaneCrafterContainer extends RecipeBookContainer<CraftingInventor
      */
     @Override
     public boolean canInteractWith(PlayerEntity playerEntity) {
-        return isWithinUsableDistance(callable, playerEntity, Blocks.CRAFTING_TABLE);
+        return isWithinUsableDistance(callable, playerEntity, BlockList.arcane_crafter);
+    }
+
+    /**
+     * Used to determine if a crafting recipe is valid.
+     */
+    private void determineRecipe() {
+        te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
+            updateInv();
+            ICraftingRecipe recipe = world.getRecipeManager().getRecipe(IRecipeType.CRAFTING, tempInventory, world).orElse(null);
+            currentRecipe = Either.left(recipe);
+            if(recipe != null)
+                ((IItemHandlerModifiable)h).setStackInSlot(0, recipe.getCraftingResult(tempInventory));
+            else {
+                world.getRecipeManager().getRecipe(RecipeList.arcane_crafter, inv, world).ifPresent(arcaneRecipe -> {
+                    ((IItemHandlerModifiable)h).setStackInSlot(0, arcaneRecipe.getCraftingResult(inv));
+                    currentRecipe = Either.right(arcaneRecipe);
+                });
+            }
+        });
+    }
+
+    /**
+     * When the item from the result slot gets taken by a player.
+     * @return Always the inputted stack.
+     */
+    private ItemStack onCraftingResultItemTakenFromSlot(PlayerEntity player, ItemStack stack) {
+        te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
+            updateInv();
+            //Gets the remaining items from the recipe when you don't have enough inventory space.
+            //We're using a single element array because consumers need effectively final or atomic variables...
+            final NonNullList<ItemStack>[] remainingItems = new NonNullList[1];
+            if(currentRecipe != null)
+                currentRecipe.ifLeft(craftingRecipe -> remainingItems[0] = getRemainingItems(craftingRecipe)).ifRight(arcaneRecipe -> remainingItems[0] = getRemainingItems(arcaneRecipe));
+            ((IItemHandlerModifiable)h).setStackInSlot(0, ItemStack.EMPTY);
+            for(int i = 1; i < 10; i++) {
+                ItemStack stack1 = h.getStackInSlot(i);
+                stack1.shrink(1);
+                ((IItemHandlerModifiable)h).setStackInSlot(i, stack1);
+            }
+            for(ItemStack stack1 : remainingItems[0]) {
+                if(!stack1.isEmpty())
+                    if(!player.inventory.addItemStackToInventory(stack1))
+                        player.dropItem(stack1, false);
+            }
+            determineRecipe();
+        });
+        return stack;
+    }
+
+    private NonNullList<ItemStack> getRemainingItems(IRecipe<?> recipe) {
+        try {
+            return recipe instanceof ICraftingRecipe ? ((ICraftingRecipe)recipe).getRemainingItems(tempInventory) : ((ArcaneCrafterRecipe)recipe).getRemainingItems(inv);
+        } catch(NullPointerException e) {
+            return NonNullList.withSize(10, ItemStack.EMPTY);
+        }
+    }
+
+    @Override
+    public void onCraftMatrixChanged(IInventory inventoryIn) {
+        determineRecipe();
+    }
+
+    private void updateInv() {
+        tempInventory = new CraftingInventory(new DummyContainer(), 3, 3);
+        for(int i = 0; i < 8; i++) {
+            tempInventory.setInventorySlotContents(i, getSlot(i).getStack());
+            inv.setInventorySlotContents(i, getSlot(i).getStack());
+        }
     }
 
     public ItemStack transferStackInSlot(PlayerEntity playerEntity, int slot) {
@@ -156,70 +187,23 @@ public class ArcaneCrafterContainer extends RecipeBookContainer<CraftingInventor
                 invSlot.onSlotChange(stack1, stack);
             }
             // Mojang, the actual fuck is this?
-            else if (slot >= 10 && slot < 46)
+            else if (slot >= 11 && slot < 47)
                 if (!mergeItemStack(stack1, 1, 10, false))
                     if (slot < 37)
-                        if (!mergeItemStack(stack1, 37, 46, false)) return ItemStack.EMPTY;
-                    else if (!this.mergeItemStack(stack1, 10, 37, false)) return ItemStack.EMPTY;
-            else if (!mergeItemStack(stack1, 10, 46, false)) return ItemStack.EMPTY;
+                        if (!mergeItemStack(stack1, 38, 47, false)) return ItemStack.EMPTY;
+                    else if (!this.mergeItemStack(stack1, 11, 38, false)) return ItemStack.EMPTY;
+            else if (!mergeItemStack(stack1, 11, 47, false)) return ItemStack.EMPTY;
 
             if (stack1.isEmpty()) invSlot.putStack(ItemStack.EMPTY);
             else invSlot.onSlotChanged();
             // But... why?
             if (stack1.getCount() == stack.getCount()) return ItemStack.EMPTY;
-            // This is practically useless and stupid:
-            //ItemStack stack2 = slot.onTake(playerEntity, stack1);
-            // onTake returns same stack you gave it... And mojang is creating new variable for that
+            /* This is practically useless and stupid:
+            /  onTake returns same stack you gave it... And mojang is creating new variable for that
+            /  Commented line: ItemStack stack2 = slot.onTake(playerEntity, stack1); */
+            // Drop the item if theres no space.
             if (slot == 0) playerEntity.dropItem(stack1, false); // stack2 instead of stack1 if bug occurs
         }
         return stack;
-    }
-
-    /**
-     * If slot can be merged with a stack.
-     * @param stack Stack to merge
-     * @param slot Slot to merge
-     * @return If it can merge
-     */
-    public boolean canMergeSlot(ItemStack stack, Slot slot) {
-        return slot.inventory != result && super.canMergeSlot(stack, slot);
-    }
-
-    /**
-     * Gets output slot's index.
-     * @return Always 0
-     */
-    public int getOutputSlot() {
-        return 0;
-    }
-    /**
-     * Gets width of the container.
-     * @return Matrix width
-     */
-    public int getWidth() {
-        return matrix.getWidth();
-    }
-    /**
-     * Gets height of the container.
-     * @return Matrix height
-     */
-    public int getHeight() {
-        return matrix.getHeight();
-    }
-    /**
-     * Gets size of...?
-     * @return Size
-     */
-    @OnlyIn(Dist.CLIENT)
-    public int getSize() {
-        return 10;
-    }
-    /**
-     * Recipe book category.
-     * @return CRAFTING
-     */
-    @OnlyIn(Dist.CLIENT)
-    public RecipeBookCategory func_241850_m() {
-        return RecipeBookCategory.CRAFTING;
     }
 }

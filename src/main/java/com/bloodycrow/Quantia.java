@@ -3,10 +3,8 @@ package com.bloodycrow;
 import com.bloodycrow.blocks.ArcaneCrafterBlock;
 import com.bloodycrow.containers.ArcaneCrafterContainer;
 import com.bloodycrow.containers.ArcaneCrafterScreen;
-import com.bloodycrow.list.BlockList;
-import com.bloodycrow.list.ContainerList;
-import com.bloodycrow.list.ItemList;
-import com.bloodycrow.list.TileEntityList;
+import com.bloodycrow.list.*;
+import com.bloodycrow.recipes.ArcaneCrafterRecipe;
 import com.bloodycrow.tileentities.ArcaneCrafterTileEntity;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -18,10 +16,13 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.item.crafting.IRecipeType;
 import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.IWorldPosCallable;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.extensions.IForgeContainerType;
@@ -47,13 +48,15 @@ public class Quantia {
         bus.addGenericListener(Block.class, this::registerBlock);
         bus.addGenericListener(TileEntityType.class, this::registerTileEntity);
         bus.addGenericListener(ContainerType.class, this::registerContainer);
+        bus.addGenericListener(IRecipeSerializer.class, this::registerRecipeSerializer);
     }
 
     private void registerItem(RegistryEvent.Register<Item> event) {
         event.getRegistry().registerAll(
                 ItemList.arcane_crafter = (BlockItem)new BlockItem(BlockList.arcane_crafter, new Item.Properties().group(QUANTIA)).setRegistryName(BlockList.arcane_crafter.getRegistryName()),
                 ItemList.corrupted_bricks = (BlockItem)new BlockItem(BlockList.corrupted_bricks, new Item.Properties().group(QUANTIA)).setRegistryName(BlockList.corrupted_bricks.getRegistryName()),
-                ItemList.cracked_corrupted_bricks = (BlockItem)new BlockItem(BlockList.cracked_corrupted_bricks, new Item.Properties().group(QUANTIA)).setRegistryName(BlockList.cracked_corrupted_bricks.getRegistryName())
+                ItemList.cracked_corrupted_bricks = (BlockItem)new BlockItem(BlockList.cracked_corrupted_bricks, new Item.Properties().group(QUANTIA)).setRegistryName(BlockList.cracked_corrupted_bricks.getRegistryName()),
+                ItemList.mossy_corrupted_bricks = (BlockItem)new BlockItem(BlockList.mossy_corrupted_bricks, new Item.Properties().group(QUANTIA)).setRegistryName(BlockList.mossy_corrupted_bricks.getRegistryName())
         );
     }
 
@@ -61,7 +64,8 @@ public class Quantia {
         event.getRegistry().registerAll(
                 BlockList.arcane_crafter = (ArcaneCrafterBlock)new ArcaneCrafterBlock(AbstractBlock.Properties.create(Material.ROCK).hardnessAndResistance(3F, 3F).setRequiresTool().harvestTool(ToolType.PICKAXE).harvestLevel(2)).setRegistryName(new ResourceLocation(MOD_ID, "arcane_crafter")),
                 BlockList.corrupted_bricks = new Block(AbstractBlock.Properties.create(Material.ROCK, MaterialColor.GRAY).hardnessAndResistance(2.75F, 6.35F).setRequiresTool().harvestTool(ToolType.PICKAXE).harvestLevel(2)).setRegistryName(new ResourceLocation(MOD_ID, "corrupted_bricks")),
-                BlockList.cracked_corrupted_bricks = new Block(AbstractBlock.Properties.create(Material.ROCK, MaterialColor.GRAY).hardnessAndResistance(2.75F, 6.35F).setRequiresTool().harvestTool(ToolType.PICKAXE).harvestLevel(2)).setRegistryName(new ResourceLocation(MOD_ID, "cracked_corrupted_bricks"))
+                BlockList.cracked_corrupted_bricks = new Block(AbstractBlock.Properties.create(Material.ROCK, MaterialColor.GRAY).hardnessAndResistance(2.75F, 6.35F).setRequiresTool().harvestTool(ToolType.PICKAXE).harvestLevel(2)).setRegistryName(new ResourceLocation(MOD_ID, "cracked_corrupted_bricks")),
+                BlockList.mossy_corrupted_bricks = new Block(AbstractBlock.Properties.create(Material.ROCK, MaterialColor.GRAY).hardnessAndResistance(2.75F, 6.35F).setRequiresTool().harvestTool(ToolType.PICKAXE).harvestLevel(2)).setRegistryName(new ResourceLocation(MOD_ID, "mossy_corrupted_bricks"))
         );
     }
 
@@ -76,9 +80,22 @@ public class Quantia {
                 ContainerList.arcane_crafter = (ContainerType<ArcaneCrafterContainer>)IForgeContainerType.create((windowId, inv, data) -> {
                     BlockPos pos = data.readBlockPos();
                     World world = inv.player.getEntityWorld();
-                    return new ArcaneCrafterContainer(windowId, inv, IWorldPosCallable.of(world, pos));
+                    return new ArcaneCrafterContainer(windowId, world, pos, inv, IWorldPosCallable.of(world, pos));
                 }).setRegistryName(new ResourceLocation(MOD_ID, "arcane_crafter"))
         );
         ScreenManager.registerFactory(ContainerList.arcane_crafter, ArcaneCrafterScreen::new);
+    }
+
+    private void registerRecipeSerializer(RegistryEvent.Register<IRecipeSerializer<?>> event) {
+        //Also registering types here.
+        RecipeList.arcane_crafter = Registry.register(Registry.RECIPE_TYPE, new ResourceLocation(MOD_ID, "arcane_crafter"), new IRecipeType<ArcaneCrafterRecipe>(){
+            @Override
+            public String toString() {
+                return "quantia:arcane_crafter";
+            }
+        });
+        event.getRegistry().registerAll(
+                RecipeSerializerList.arcane_recipe_serializer = (ArcaneCrafterRecipe.Serializer)new ArcaneCrafterRecipe.Serializer().setRegistryName(new ResourceLocation(MOD_ID, "arcane_crafter"))
+        );
     }
 }

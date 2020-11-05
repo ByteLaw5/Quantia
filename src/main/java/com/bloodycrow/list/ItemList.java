@@ -6,4 +6,5 @@ public class ItemList {
     public static BlockItem arcane_crafter;
     public static BlockItem corrupted_bricks;
     public static BlockItem cracked_corrupted_bricks;
+    public static BlockItem mossy_corrupted_bricks;
 }
