@@ -107,6 +107,20 @@ public class ArcaneCrafterContainer extends Container {
     }
 
     /**
+     * When the container is closed.
+     * @param playerIn The player that closed the container
+     */
+    @Override
+    public void onContainerClosed(PlayerEntity playerIn) {
+        super.onContainerClosed(playerIn);
+        for(int i = 1; i < 10; i++) {
+            ItemStack toDrop = getSlot(i).getStack();
+            if(!toDrop.isEmpty())
+                playerIn.dropItem(toDrop, false);
+        }
+    }
+
+    /**
      * Used to determine if a crafting recipe is valid.
      */
     private void determineRecipe() {

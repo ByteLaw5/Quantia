@@ -2,12 +2,10 @@ package com.bloodycrow.tileentities;
 
 import com.bloodycrow.containers.ArcaneCrafterContainer;
 import com.bloodycrow.list.TileEntityList;
-import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IWorldPosCallable;
 import net.minecraft.util.text.ITextComponent;
@@ -39,26 +37,7 @@ public class ArcaneCrafterTileEntity extends TileEntity implements INamedContain
     public ITextComponent getDisplayName() {
         return customName == null ? new TranslationTextComponent("quantia.arcane_crafter.name") : customName;
     }
-    /**
-     * Deserializes/reads NBT data.
-     * @param state State of the block
-     * @param nbt Given NBT data.
-     */
-    @Override
-    public void read(BlockState state, final CompoundNBT nbt) {
-        items.ifPresent(h -> h.deserializeNBT(nbt.getCompound("Items")));
-        super.read(state, nbt);
-    }
-    /**
-     * Serializes/writes NBT data.
-     * @param compound NBT data to serialize
-     * @return Serialized NBT data.
-     */
-    @Override
-    public CompoundNBT write(final CompoundNBT compound) {
-        items.ifPresent(h -> compound.put("Items", h.serializeNBT()));
-        return super.write(compound);
-    }
+
     /**
      * Gets tile entity capabilities
      * @param cap Capability

@@ -1,0 +1,16 @@
+{
+    "type": "quantia:arcane_crafter",
+    "key": {
+        "#": {
+            "item": "quantia:corrupted_bricks"
+        }
+    },
+    "pattern": [
+        "###",
+        "## ",
+        "#  "
+    ],
+    "result": {
+        "item": "minecraft:stone"
+    }
+}
