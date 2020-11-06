@@ -1,9 +1,9 @@
 package com.bloodycrow.containers;
 
+import com.bloodycrow.Quantia;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.bloodycrow.Quantia;
-import net.minecraft.client.Minecraft;
+
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.ResourceLocation;
@@ -24,13 +24,13 @@ public class EnergyProducerScreen extends ContainerScreen<EnergyProducerContaine
 
     @Override
     protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int x, int y) {
-        drawString(matrixStack, Minecraft.getInstance().fontRenderer, "Energy: " + container.getEnergy(), 10, 10, 0xffffff);
+        drawString(matrixStack, minecraft.fontRenderer, "Energy: " + container.getEnergy(), 10, 10, 0xffffff);
     }
 
     @Override
     protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float partialTicks, int x, int y) {
         GlStateManager.color4f(1.0f, 1.0f, 1.0f, 1.0f);
-        this.minecraft.getTextureManager().bindTexture(new ResourceLocation(Quantia.MOD_ID, "textures/gui/energy_producer.png"));
+        minecraft.getTextureManager().bindTexture(new ResourceLocation(Quantia.MOD_ID, "textures/gui/energy_producer.png"));
         int relX = (this.width - this.xSize) / 2;
         int relY = (this.height - this.ySize) / 2;
         this.blit(matrixStack, relX, relY, 0, 0, this.xSize, this.ySize);

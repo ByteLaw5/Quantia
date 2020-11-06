@@ -13,8 +13,6 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.NetworkHooks;
@@ -26,10 +24,6 @@ import javax.annotation.Nullable;
  */
 @SuppressWarnings("deprecation")
 public class ArcaneCrafterBlock extends Block {
-    /**
-     * Name of the container for lang files.
-     */
-    private static final ITextComponent CONTAINER_NAME = new TranslationTextComponent("container.arcane_crafting");
     public ArcaneCrafterBlock(Properties properties) {
         super(properties);
     }

@@ -22,6 +22,7 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.items.SlotItemHandler;
 
@@ -63,12 +64,9 @@ public class ArcaneCrafterContainer extends Container {
 
                     @Override
                     public ItemStack onTake(PlayerEntity thePlayer, ItemStack stack) {
-                        return onCraftingResultItemTakenFromSlot(thePlayer, stack);
-                    }
-
-                    @Override
-                    public void onSlotChanged() {
-                        ((IItemHandlerModifiable)h).setStackInSlot(0, determineRecipe());
+                        ItemStack result = onCraftingResultItemTakenFromSlot(thePlayer, stack);
+                        updateInv(h);
+                        return result;
                     }
                 });
                 index = 1;
@@ -78,6 +76,7 @@ public class ArcaneCrafterContainer extends Container {
                             @Override
                             public void onSlotChanged() {
                                 ((IItemHandlerModifiable)h).setStackInSlot(0, determineRecipe());
+                                updateInv(h);
                             }
                         });
                     }
@@ -110,12 +109,14 @@ public class ArcaneCrafterContainer extends Container {
     @Override
     public void onContainerClosed(PlayerEntity playerIn) {
         super.onContainerClosed(playerIn);
-        for(int i = 1; i < 10; i++) {
-            ItemStack toDrop = getSlot(i).getStack();
-            if(!toDrop.isEmpty())
-                playerIn.dropItem(toDrop, false);
-            getSlot(i).putStack(ItemStack.EMPTY);
-        }
+        te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
+            for(int i = 1; i < 26; i++) {
+                ItemStack toDrop = getSlot(i).getStack();
+                if(!toDrop.isEmpty())
+                    playerIn.dropItem(toDrop, false);
+                ((IItemHandlerModifiable)h).setStackInSlot(i, ItemStack.EMPTY);
+            }
+        });
     }
 
     /**
@@ -125,7 +126,7 @@ public class ArcaneCrafterContainer extends Container {
     private ItemStack determineRecipe() {
         ItemStack[] result = new ItemStack[1];
         te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
-            updateInv();
+            updateInv(h);
             ICraftingRecipe recipe = world.getRecipeManager().getRecipe(IRecipeType.CRAFTING, tempInventory, world).orElse(null);
             currentRecipe = Either.left(recipe);
             if(recipe != null) {
@@ -150,13 +151,12 @@ public class ArcaneCrafterContainer extends Container {
         //Containers are on the client.
         if(world.isRemote) {
             te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
-                updateInv();
+                updateInv(h);
                 //Gets the remaining items from the recipe when you don't have enough inventory space.
                 //We're using a single element array because consumers need effectively final or atomic variables...
                 final NonNullList<ItemStack>[] remainingItems = new NonNullList[1];
                 if(currentRecipe != null)
                     currentRecipe.ifLeft(craftingRecipe -> remainingItems[0] = getRemainingItems(craftingRecipe)).ifRight(arcaneRecipe -> remainingItems[0] = getRemainingItems(arcaneRecipe));
-                ((IItemHandlerModifiable)h).setStackInSlot(0, ItemStack.EMPTY);
                 for(int i = 1; i < 26; i++) { // 10 => 26
                     ItemStack stack1 = h.getStackInSlot(i);
                     stack1.shrink(1);
@@ -181,11 +181,11 @@ public class ArcaneCrafterContainer extends Container {
         }
     }
 
-    private void updateInv() {
+    private void updateInv(IItemHandler handler) {
         tempInventory = new CraftingInventory(new DummyContainer(), 3, 3);
         for(int i = 0; i < 8; i++) {
-            tempInventory.setInventorySlotContents(i, getSlot(i).getStack());
-            inv.setInventorySlotContents(i, getSlot(i).getStack());
+            tempInventory.setInventorySlotContents(i, handler.getStackInSlot(i));
+            inv.setInventorySlotContents(i, handler.getStackInSlot(i));
         }
     }
 
