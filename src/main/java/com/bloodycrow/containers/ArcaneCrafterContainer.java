@@ -41,6 +41,7 @@ public class ArcaneCrafterContainer extends Container {
      * Used for methods to get normal crafting recipes.
      */
     private CraftingInventory tempInventory;
+    private int[] tempInvIndexes = new int[] {1, 2, 3, 6, 7, 8, 11, 12, 13};
 
     public ArcaneCrafterContainer(int windowId, World world, BlockPos pos, PlayerInventory inventory, IWorldPosCallable callable) {
         super(ContainerList.arcane_crafter, windowId);
@@ -129,15 +130,11 @@ public class ArcaneCrafterContainer extends Container {
             updateInv(h);
             ICraftingRecipe recipe = world.getRecipeManager().getRecipe(IRecipeType.CRAFTING, tempInventory, world).orElse(null);
             currentRecipe = Either.left(recipe);
-            if(recipe != null) {
+            if(recipe != null)
                 result[0] = recipe.getCraftingResult(tempInventory);
-            } else {
+            else {
                 ArcaneCrafterRecipe arcaneRecipe = world.getRecipeManager().getRecipe(RecipeList.arcane_crafter, inv, world).orElse(null);
-                if(arcaneRecipe != null) {
-                    result[0] = arcaneRecipe.getCraftingResult(inv);
-                } else {
-                    result[0] = ItemStack.EMPTY;
-                }
+                result[0] = arcaneRecipe != null ? arcaneRecipe.getCraftingResult(inv) : ItemStack.EMPTY;
             }
         });
         return result[0];
@@ -183,8 +180,9 @@ public class ArcaneCrafterContainer extends Container {
 
     private void updateInv(IItemHandler handler) {
         tempInventory = new CraftingInventory(new DummyContainer(), 3, 3);
-        for(int i = 0; i < 8; i++) {
-            tempInventory.setInventorySlotContents(i, handler.getStackInSlot(i));
+        for(int i = 1; i < 9; i++) {
+            int x = tempInvIndexes[i - 1];
+            tempInventory.setInventorySlotContents(i, handler.getStackInSlot(x));
             inv.setInventorySlotContents(i, handler.getStackInSlot(i));
         }
     }
