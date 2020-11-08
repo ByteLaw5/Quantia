@@ -41,7 +41,7 @@ public class ArcaneCrafterContainer extends Container {
      * Used for methods to get normal crafting recipes.
      */
     private CraftingInventory tempInventory;
-    private int[] tempInvIndexes = new int[] {1, 2, 3, 6, 7, 8, 11, 12, 13};
+    private final int[] tempInvIndexes = new int[] {1, 2, 3, 6, 7, 8, 11, 12, 13};
 
     public ArcaneCrafterContainer(int windowId, World world, BlockPos pos, PlayerInventory inventory, IWorldPosCallable callable) {
         super(ContainerList.arcane_crafter, windowId);
@@ -172,7 +172,7 @@ public class ArcaneCrafterContainer extends Container {
 
     private NonNullList<ItemStack> getRemainingItems(IRecipe<?> recipe) {
         try {
-            return recipe instanceof ICraftingRecipe ? ((ICraftingRecipe) recipe).getRemainingItems(tempInventory) : ((ArcaneCrafterRecipe) recipe).getRemainingItems(inv);
+            return recipe instanceof ICraftingRecipe ? ((ICraftingRecipe)recipe).getRemainingItems(tempInventory) : ((ArcaneCrafterRecipe)recipe).getRemainingItems(inv);
         } catch (NullPointerException e) {
             return NonNullList.withSize(26, ItemStack.EMPTY);
         }

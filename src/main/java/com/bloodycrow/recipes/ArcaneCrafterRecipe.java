@@ -10,7 +10,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.*;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.item.crafting.IRecipeType;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.ShapedRecipe;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.NonNullList;
@@ -23,7 +26,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Set;
 
-public class ArcaneCrafterRecipe implements IRecipe<HandlerWrapper>, IShapedRecipe<HandlerWrapper> {
+public class ArcaneCrafterRecipe implements IShapedRecipe<HandlerWrapper> {
     private final NonNullList<Ingredient> recipeItems;
     private final ItemStack recipeOutput;
     private final int recipeWidth, recipeHeight;
