@@ -1,5 +1,6 @@
-package com.bloodycrow.containers;
+package com.bloodycrow.screens;
 
+import com.bloodycrow.containers.ArcaneCrafterContainer;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.bloodycrow.Quantia;

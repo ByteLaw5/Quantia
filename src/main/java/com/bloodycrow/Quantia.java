@@ -2,15 +2,26 @@ package com.bloodycrow;
 
 import com.bloodycrow.blocks.ArcaneCrafterBlock;
 import com.bloodycrow.containers.ArcaneCrafterContainer;
-import com.bloodycrow.containers.ArcaneCrafterScreen;
+import com.bloodycrow.screens.ArcaneCrafterScreen;
+import com.bloodycrow.entity.TestInvaderEntity;
+import com.bloodycrow.entity.client.TestInvaderEntityRenderer;
+import com.bloodycrow.invaderraid.InvaderRaid;
+import com.bloodycrow.invaderraid.InvaderRaidManager;
 import com.bloodycrow.list.*;
+import com.bloodycrow.networking.QuantiaNetwork;
 import com.bloodycrow.recipes.ArcaneCrafterRecipe;
 import com.bloodycrow.tileentities.ArcaneCrafterTileEntity;
+import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.client.gui.ScreenManager;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
@@ -24,12 +35,25 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.common.extensions.IForgeContainerType;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 // TODO: Fix this whole mess
 @Mod(Quantia.MOD_ID)
@@ -43,12 +67,21 @@ public class Quantia {
     };
 
     public Quantia() {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER);
+        QuantiaNetwork.registerMessages();
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
         bus.addGenericListener(Item.class, this::registerItem);
         bus.addGenericListener(Block.class, this::registerBlock);
         bus.addGenericListener(TileEntityType.class, this::registerTileEntity);
         bus.addGenericListener(ContainerType.class, this::registerContainer);
         bus.addGenericListener(IRecipeSerializer.class, this::registerRecipeSerializer);
+        bus.addGenericListener(EntityType.class, this::registerEntity);
+        bus.addListener(this::setupEvent);
+        if(FMLEnvironment.dist == Dist.CLIENT)
+            bus.addListener(this::clientEvent);
+        IEventBus forge = MinecraftForge.EVENT_BUS;
+        forge.addListener(this::worldTickEvent);
+        forge.addListener(this::registerCommands);
     }
 
     private void registerItem(RegistryEvent.Register<Item> event) {
@@ -97,5 +130,53 @@ public class Quantia {
         event.getRegistry().registerAll(
                 RecipeSerializerList.arcane_recipe_serializer = (ArcaneCrafterRecipe.Serializer)new ArcaneCrafterRecipe.Serializer().setRegistryName(new ResourceLocation(MOD_ID, "arcane_crafter"))
         );
+    }
+
+    private void registerEntity(RegistryEvent.Register<EntityType<?>> event) {
+        event.getRegistry().registerAll(
+                EntityList.test_invader = (EntityType<TestInvaderEntity>)EntityType.Builder.create(TestInvaderEntity::new, EntityClassification.MONSTER).build("quantia:test_invader").setRegistryName(new ResourceLocation(MOD_ID, "test_invader"))
+        );
+    }
+
+    private void clientEvent(FMLClientSetupEvent event) {
+        RenderingRegistry.registerEntityRenderingHandler(EntityList.test_invader, TestInvaderEntityRenderer::new);
+    }
+
+    private void setupEvent(FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            GlobalEntityTypeAttributes.put(EntityList.test_invader, TestInvaderEntity.createAttributes().create());
+        });
+    }
+
+    private void worldTickEvent(TickEvent.WorldTickEvent worldTickEvent) {
+        if(worldTickEvent.phase == TickEvent.Phase.START && worldTickEvent.side == LogicalSide.SERVER) {
+            InvaderRaidManager.getForWorld((ServerWorld)worldTickEvent.world).tick();
+        }
+    }
+
+    private void registerCommands(RegisterCommandsEvent event) {
+        CommandDispatcher<CommandSource> dispatcher = event.getDispatcher();
+        dispatcher.register(Commands.literal("startraid")
+                .requires(source -> source.hasPermissionLevel(3))
+                .executes(ctx -> {
+                    InvaderRaid raid = InvaderRaidManager.createRaid(ctx.getSource().getWorld(), ctx.getSource().assertIsEntity().getPosition());
+                    return 0;
+                }));
+    }
+
+    public static class Config {
+        public static final ForgeConfigSpec SERVER;
+
+        public static final ForgeConfigSpec.IntValue RAID_DELAY;
+        public static final ForgeConfigSpec.BooleanValue ENABLE_RAIDS;
+
+        static {
+            ForgeConfigSpec.Builder serverBuilder = new ForgeConfigSpec.Builder();
+            serverBuilder.comment("Invader Raids").push("invaderraids");
+            RAID_DELAY = serverBuilder.comment("The delay between invader raids").defineInRange("raidDelay", 72000, 0, Integer.MAX_VALUE);
+            ENABLE_RAIDS = serverBuilder.comment("If you don't want raids, set this to false").define("enableRaids", true);
+            serverBuilder.pop();
+            SERVER = serverBuilder.build();
+        }
     }
 }

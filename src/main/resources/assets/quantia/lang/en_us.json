@@ -6,5 +6,7 @@
 
     "itemGroup.quantia": "Quantia",
 
-    "quantia.arcane_crafter.name": "Arcane Crafter"
+    "quantia.arcane_crafter.name": "Arcane Crafter",
+
+    "event.quantia.invaderraid": "Invader Raid"
 }
