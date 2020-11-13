@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class LevelRewardMap implements Iterable<Map.Entry<Integer, ItemStack>>, Map<Integer, ItemStack> {
+public final class LevelRewardMap implements Iterable<Map.Entry<Integer, ItemStack>>, Map<Integer, ItemStack> {
     private final Set<Entry<Integer, ItemStack>> entrySet;
 
     public LevelRewardMap() {

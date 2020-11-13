@@ -1,6 +1,7 @@
 package com.bloodycrow.screens;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.item.ItemStack;
@@ -29,5 +30,10 @@ public class RaidOverScreen extends Screen {
         drawCenteredString(matrixStack, minecraft.fontRenderer, new TranslationTextComponent("quantia.raid_screen_message", won), 0xffffff, 125, 125);
         itemRenderer.renderItemAndEffectIntoGUI(reward, 125, 150);
         drawCenteredString(matrixStack, minecraft.fontRenderer, Integer.toString(reward.getCount()), 0xffffff, 125, 125);
+        drawString(matrixStack, minecraft.fontRenderer, getTitle(), 0xffffff, 200, 200);
+    }
+
+    public static void open(ItemStack reward, boolean won) {
+        Minecraft.getInstance().displayGuiScreen(new RaidOverScreen(reward, won));
     }
 }

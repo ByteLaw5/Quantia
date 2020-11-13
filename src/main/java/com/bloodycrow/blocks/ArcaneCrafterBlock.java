@@ -31,7 +31,7 @@ public class ArcaneCrafterBlock extends Block {
      * Creates tile entity of this block.
      * @param state State of the block
      * @param world World this block is in
-     * @return EnergyProducer tile entity.
+     * @return Arcane Crafter tile entity.
      */
     @Nullable
     @Override
@@ -53,7 +53,7 @@ public class ArcaneCrafterBlock extends Block {
      * @param pos Position of the block
      * @param state State of the block
      * @param placer Who placed the block
-     * @param stack Stack of the block.
+     * @param stack Item stack of the block in the placer's inventory
      */
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
@@ -72,11 +72,12 @@ public class ArcaneCrafterBlock extends Block {
      * @param pos Position of the block
      * @param player Player which activated it
      * @param hand Hand used
-     * @param ray Hit raytrace
-     * @return Action result
+     * @param ray Hit raytrace result
+     * @return Action result type
      */
     @Override
     public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult ray) {
+        //We don't want to do this client side, but server side so we have to check if we're on the server
         if(!world.isRemote) {
             TileEntity te = world.getTileEntity(pos);
             // If it's named container provider, open GUI
@@ -86,7 +87,6 @@ public class ArcaneCrafterBlock extends Block {
             // Return action result as success
             return ActionResultType.SUCCESS;
         }
-        // If world is remote, activate base class onBlockActivated
         return super.onBlockActivated(state, world, pos, player, hand, ray);
     }
 }

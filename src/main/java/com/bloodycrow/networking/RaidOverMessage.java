@@ -1,7 +1,6 @@
 package com.bloodycrow.networking;
 
 import com.bloodycrow.screens.RaidOverScreen;
-import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -9,7 +8,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.function.Supplier;
 
 //Meant to send from server to client.
-public class RaidOverMessage {
+public class RaidOverMessage extends Message {
     private final ItemStack reward;
     private final boolean won;
 
@@ -23,13 +22,18 @@ public class RaidOverMessage {
         this.won = won;
     }
 
-    public void toBytes(PacketBuffer buf) {
+    @Override
+    public void encode(PacketBuffer buf) {
         buf.writeItemStack(reward);
         buf.writeBoolean(won);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> Minecraft.getInstance().displayGuiScreen(new RaidOverScreen(reward, won)));
+    @Override
+    public void handleMessage(Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            if(ctx.get().getSender() == null) //If we're on the client.
+                RaidOverScreen.open(reward, won);
+        });
         ctx.get().setPacketHandled(true);
     }
 }

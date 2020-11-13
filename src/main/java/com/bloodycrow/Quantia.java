@@ -70,13 +70,16 @@ public class Quantia {
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, Config.SERVER);
         QuantiaNetwork.registerMessages();
         IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        //Start register events
         bus.addGenericListener(Item.class, this::registerItem);
         bus.addGenericListener(Block.class, this::registerBlock);
         bus.addGenericListener(TileEntityType.class, this::registerTileEntity);
         bus.addGenericListener(ContainerType.class, this::registerContainer);
         bus.addGenericListener(IRecipeSerializer.class, this::registerRecipeSerializer);
         bus.addGenericListener(EntityType.class, this::registerEntity);
+        //End register events
         bus.addListener(this::setupEvent);
+        //Only register when we're on the client. Not good if this is ran on the server
         if(FMLEnvironment.dist == Dist.CLIENT)
             bus.addListener(this::clientEvent);
         IEventBus forge = MinecraftForge.EVENT_BUS;
@@ -116,7 +119,9 @@ public class Quantia {
                     return new ArcaneCrafterContainer(windowId, world, pos, inv, IWorldPosCallable.of(world, pos));
                 }).setRegistryName(new ResourceLocation(MOD_ID, "arcane_crafter"))
         );
-        ScreenManager.registerFactory(ContainerList.arcane_crafter, ArcaneCrafterScreen::new);
+        if(FMLEnvironment.dist == Dist.CLIENT) { //Screens are client only.
+            ScreenManager.registerFactory(ContainerList.arcane_crafter, ArcaneCrafterScreen::new);
+        }
     }
 
     private void registerRecipeSerializer(RegistryEvent.Register<IRecipeSerializer<?>> event) {
@@ -138,22 +143,38 @@ public class Quantia {
         );
     }
 
+    /**
+     * All client setup is here.
+     * @param event The event
+     */
     private void clientEvent(FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(EntityList.test_invader, TestInvaderEntityRenderer::new);
     }
 
+    /**
+     * All common setup is here.
+     * @param event The event
+     */
     private void setupEvent(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             GlobalEntityTypeAttributes.put(EntityList.test_invader, TestInvaderEntity.createAttributes().create());
         });
     }
 
+    /**
+     * Every time a world ticks. Fires on twice on both logical sides
+     * @param worldTickEvent The event
+     */
     private void worldTickEvent(TickEvent.WorldTickEvent worldTickEvent) {
         if(worldTickEvent.phase == TickEvent.Phase.START && worldTickEvent.side == LogicalSide.SERVER) {
             InvaderRaidManager.getForWorld((ServerWorld)worldTickEvent.world).tick();
         }
     }
 
+    /**
+     * Used to register commands every time a reload happens.
+     * @param event The event
+     */
     private void registerCommands(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSource> dispatcher = event.getDispatcher();
         dispatcher.register(Commands.literal("startraid")
@@ -164,6 +185,9 @@ public class Quantia {
                 }));
     }
 
+    /**
+     * Mod configuration class.
+     */
     public static class Config {
         public static final ForgeConfigSpec SERVER;
 
