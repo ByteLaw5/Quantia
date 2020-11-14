@@ -2,17 +2,25 @@ package com.bloodycrow.entity.client;
 
 import com.bloodycrow.Quantia;
 import com.bloodycrow.entity.TestInvaderEntity;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraft.client.renderer.entity.BipedRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererManager;
-import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
+import static com.bloodycrow.entity.AbstractInvaderRaiderEntity.RESIZE_FACTOR;
+
 @OnlyIn(Dist.CLIENT)
-public class TestInvaderEntityRenderer extends MobRenderer<TestInvaderEntity, BipedModel<TestInvaderEntity>> {
+public class TestInvaderEntityRenderer extends BipedRenderer<TestInvaderEntity, BipedResizableModel<TestInvaderEntity>> {
     public TestInvaderEntityRenderer(EntityRendererManager renderManagerIn) {
-        super(renderManagerIn, new BipedModel<>(1F), 0.45F);
+        super(renderManagerIn, new BipedResizableModel<>(1.0F), 0.45F);
+    }
+
+    @Override
+    protected void preRenderCallback(TestInvaderEntity entitylivingbaseIn, MatrixStack matrixStackIn, float partialTickTime) {
+        if(entitylivingbaseIn.isLeader())
+            getEntityModel().resize(RESIZE_FACTOR);
     }
 
     @Override

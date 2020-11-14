@@ -169,13 +169,13 @@ public class InvaderRaid {
             case PEACEFUL:
                 return 0;
             case EASY:
-                return 0.1F;
+                return 0.05F;
             case NORMAL:
-                return 0.25F;
+                return 0.1F;
             case HARD:
-                return 0.55F;
+                return 0.25F;
             default:
-                return 0.75F;
+                return 0.3F;
         }
     }
 

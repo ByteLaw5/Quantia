@@ -36,8 +36,7 @@ public class TestInvaderEntity extends AbstractInvaderRaiderEntity {
     @Override
     public void applyWaveBonus(int wave, boolean flag) {
         InvaderRaid raid = getRaid();
-        boolean flag1 = rand.nextFloat() <= raid.getEnchantOdds();
-        if(flag1) {
+        if(rand.nextFloat() <= raid.getEnchantOdds()) {
             ItemStack stack = new ItemStack(Items.STONE_SWORD);
             Map<Enchantment, Integer> map = Maps.newHashMap();
             if(6 < raid.getTotalWaves())

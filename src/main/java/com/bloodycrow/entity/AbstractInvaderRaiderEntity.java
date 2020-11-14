@@ -5,6 +5,8 @@ import com.bloodycrow.invaderraid.InvaderRaidManager;
 import com.google.common.collect.Sets;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
+import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.monster.PatrollerEntity;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class AbstractInvaderRaiderEntity extends PatrollerEntity {
+    public static final float RESIZE_FACTOR = 1.75F;
     protected static final DataParameter<Boolean> CELEBRATING = EntityDataManager.createKey(AbstractInvaderRaiderEntity.class, DataSerializers.BOOLEAN);
     @Nullable
     protected InvaderRaid raid;
@@ -60,7 +63,23 @@ public abstract class AbstractInvaderRaiderEntity extends PatrollerEntity {
     @Override
     public ILivingEntityData onInitialSpawn(IServerWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
         setCanPickUpLoot(true);
-        return super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+        if (reason != SpawnReason.PATROL && reason != SpawnReason.EVENT && reason != SpawnReason.STRUCTURE && this.rand.nextFloat() < 0.06F && this.canBeLeader()) {
+            this.patrolLeader = true;
+        }
+
+        if (this.isLeader()) {
+            size = size.scale(RESIZE_FACTOR);
+            eyeHeight = eyeHeight * RESIZE_FACTOR;
+            recalculateSize();
+        }
+
+        if (reason == SpawnReason.PATROL) {
+            this.patrolling = true;
+        }
+
+        this.getAttribute(Attributes.FOLLOW_RANGE).applyPersistentModifier(new AttributeModifier("Random spawn bonus", this.rand.nextGaussian() * 0.05D, AttributeModifier.Operation.MULTIPLY_BASE));
+        this.setLeftHanded(this.rand.nextFloat() < 0.05F);
+        return spawnDataIn;
     }
 
     public abstract void applyWaveBonus(int wave, boolean flag);

@@ -8,5 +8,9 @@
 
     "quantia.arcane_crafter.name": "Arcane Crafter",
 
-    "event.quantia.invaderraid": "Invader Raid"
+    "event.quantia.invaderraid": "Invader Raid",
+    "event.quantia.raid_screen_message": "You %s the raid!",
+    "event.quantia.raid_over_title": "Raid over!",
+    "event.quantia.won": "won",
+    "event.quantia.loss": "lost"
 }
